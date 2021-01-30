@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faction Members Crimes Compiler</title>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        let fetchInterval = 6000;
+        let apiKey = '';
+        let factionId = '';
+        const getFactionUrl = (factionId = '') => `https://api.torn.com/faction/${factionId}?selections=basic&key=${apiKey}`;
+        const getUserUrl = (userId = '') => `https://api.torn.com/user/${userId}?selections=crimes&key=${apiKey}`;
+        const crimesOnlyTEAMultiplier = {
+            theft: .11,
+            auto_theft: .66,
+            computer_crimes: .5,
+            murder: .66,
+            fraud_crimes: 1
+        };
+        let data = {};
+
+        const fetchUserCrimes = (userId = '') => new Promise((resolve, reject) => {
+            fetch(getUserUrl(userId))
+                .then(res => res.json())
+                .then(userCrime => {
+                    userCrime.criminalrecord.tea = Object.entries(crimesOnlyTEAMultiplier).reduce((acc, v) => acc + userCrime.criminalrecord[v[0]] * v[1], 0);
+                    setTimeout(resolve, fetchInterval, {
+                        player_id: userId,
+                        ...userCrime
+                    });
+                });
+        });
+
+        const start = () => {
+            fetch(getFactionUrl(factionId))
+                .then(res => res.json())
+                .then(faction => {
+                    setTimeout(async () => {
+                        for (let uid in faction.members) {
+                            data = Object.assign({}, faction)
+                            await fetchUserCrimes(uid)
+                                .then(userCrime => {
+                                    faction.members[uid] = {
+                                        ...faction.members[uid],
+                                        ...userCrime
+                                    }
+                                })
+                        }
+                    }, fetchInterval);
+                });
+        };
+
+        const generateCsv = () => {
+            let headers = [
+                'name',
+                'player_id',
+                'selling_illegal_products',
+                'theft',
+                'auto_theft',
+                'drug_deals',
+                'computer_crimes',
+                'murder',
+                'fraud_crimes',
+                'other',
+                'total',
+                'crimes_only_total_effective_arsons'
+            ];
+            let lines = [headers.join(',')];
+            Object.entries(data.members).forEach(member => {
+                let memberData = member[1];
+                lines.push([
+                    `"${memberData.name}"`,
+                    member[0],
+                    memberData.criminalrecord.selling_illegal_products,
+                    memberData.criminalrecord.theft,
+                    memberData.criminalrecord.auto_theft,
+                    memberData.criminalrecord.drug_deals,
+                    memberData.criminalrecord.computer_crimes,
+                    memberData.criminalrecord.murder,
+                    memberData.criminalrecord.fraud_crimes,
+                    memberData.criminalrecord.other,
+                    memberData.criminalrecord.total,
+                    memberData.criminalrecord.tea
+                ].join(','));
+            });
+            return lines.join("\n");
+        };
+
+        const downloadCsv = () => {
+            let blob = new Blob([generateCsv()], { type: 'text/csv;charset=utf-8;' });
+            let blobUrl = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.id = 'download';
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = `faction-crimes.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+        };
+
+        const checker = setInterval(() => {
+            if (data.hasOwnProperty('members')) {
+                let progress = Object.values(data.members).filter(m => !m.hasOwnProperty('criminalrecord')).length;
+                let totalMember = Object.keys(data.members).length;
+                document.getElementById("progress").innerHTML = `${
+                    totalMember - progress
+                  } / ${totalMember} (${Math.round(
+                    ((totalMember - progress) / totalMember) * 100
+                  )}%)`;
+                if (progress === 0) {
+                    document.getElementById("download").style.display = 'block';
+                    clearInterval(checker);
+                }
+            }
+        }, 1000);
+
+        document.getElementById("app").innerHTML = `
+        <h1>Faction Members Crimes Compiler</h1>
+        <p>This tool will make 1 + <number of faction members> of API calls, compile faction's members' crimes records into a CSV file.</p>
+        <p>
+            <label for="api_key">API Key</label><br><input type="text" id="api_key" placeholder="API Key">
+        </p>
+        <p>
+            <label for="fetch_interval">API Call Frequency (every x seconds)</label><br>
+            <input type="number" id="fetch_interval" min="1" value="${fetchInterval / 1000}"><br>
+            <span id="etc">Approximately 10 minutes to complete.</span>
+        </p>
+        <p>
+            <laber for="faction_id">Faction ID (leave blank to compile your faction)</label></br>
+            <input type="text" id="faction_id" value="${factionId}">
+        </p>
+        <p>
+            <button id="start">Start</button>
+        </p>
+        <p id="progress"></p>
+        <p><button id="download" style="display:none;">Download</button></p>
+        `;
+
+        document.getElementById("app").addEventListener("click", (e) => {
+            if (e.target.id === "start" && apiKey !== '') {
+                e.target.style.display = "none";
+                start();
+            } else if (e.target.id === "download") {
+                downloadCsv();
+            }
+        });
+
+        document.getElementById('app').addEventListener('change', (e) => {
+            if (e.target.id === 'api_key') {
+                apiKey = e.target.value;
+            } else if (e.target.id === 'fetch_interval') {
+                fetchInterval = e.target.value * 1000;
+                document.getElementById('etc').innerHTML = `Approximately ${Math.round(100 * fetchInterval / 1000 / 60)} minutes to complete.`;
+            } else if (e.target.id === 'faction_id') {
+                factionId = e.target.value;
+            }
+        });
+    </script>
+</body>
+</html>
