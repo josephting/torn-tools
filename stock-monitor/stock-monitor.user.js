@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Torn Stock Monitor
 // @namespace    https://github.com/torn-tools/stock-monitor
-// @version      1.0.0
+// @version      1.0.1
 // @description  Monitor for available shares on stock exchange page
 // @author       josephting [2272298]
 // @include      https://www.torn.com/stockexchange.php*
@@ -22,6 +22,7 @@
                     GM_notification(`${stock} has ${availableShares} available shares`);
                     observer.disconnect();
                     clearInterval(stockOpener);
+                    document.querySelector('title').innerText = '(!) ' + document.querySelector('title').innerText;
                 }
             }
         });
