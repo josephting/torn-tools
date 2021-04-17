@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wall Targets Spy Loader
 // @namespace    https://github.com/josephting/torn-tools/tree/master/wall-targets-spy-loader
-// @version      0.9
+// @version      0.9.1
 // @updateURL    https://github.com/josephting/torn-tools/raw/master/wall-targets-spy-loaders/wall-targets-spy-loader.user.js
 // @downloadURL  https://github.com/josephting/torn-tools/raw/master/wall-targets-spy-loaders/wall-targets-spy-loader.user.js
 // @supportURL   https://github.com/josephting/torn-tools/issues/new
@@ -157,6 +157,6 @@ const tickRate = 1000; // TornStats API load throttling (once every second)
     .wall-spy .red{color:#FF7A4D;}
     .wall-spy .green{color:#85B200;}
     .wall-spy .details{color:#FFF;background:#000;display:inline-block;position:absolute;top:0;left:150%;opacity:0;transition:.3s;white-space:nowrap;border-radius:5px;padding:0 5px;}
-    .wall-spy:hover .details{opacity:1;left:calc(100% + 7px);}
+    .wall-spy > span:hover + .details{opacity:1;left:calc(100% + 7px);}
     `);
 })();
