@@ -2,8 +2,8 @@
 // @name         Wall Targets Spy Loader
 // @namespace    https://github.com/josephting/torn-tools/tree/master/wall-targets-spy-loader
 // @version      0.9.1
-// @updateURL    https://github.com/josephting/torn-tools/raw/master/wall-targets-spy-loaders/wall-targets-spy-loader.user.js
-// @downloadURL  https://github.com/josephting/torn-tools/raw/master/wall-targets-spy-loaders/wall-targets-spy-loader.user.js
+// @updateURL    https://github.com/josephting/torn-tools/raw/master/wall-targets-spy-loader/wall-targets-spy-loader.user.js
+// @downloadURL  https://github.com/josephting/torn-tools/raw/master/wall-targets-spy-loader/wall-targets-spy-loader.user.js
 // @supportURL   https://github.com/josephting/torn-tools/issues/new
 // @description  Load spy from Torn Stats for targets that's on the wall
 // @author       josephting [2272298]
