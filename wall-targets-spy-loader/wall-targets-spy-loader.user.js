@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wall Targets Spy Loader
 // @namespace    https://github.com/josephting/torn-tools/tree/master/wall-targets-spy-loader
-// @version      0.9.1
+// @version      0.9.2
 // @supportURL   https://github.com/josephting/torn-tools/issues/new
 // @description  Load spy from Torn Stats for targets that's on the wall
 // @author       josephting [2272298]
@@ -13,7 +13,7 @@
 // @connect      www.tornstats.com
 // ==/UserScript==
 
-const API_KEY = ''; // Torn API key - https://www.torn.com/preferences.php#tab=api
+const API_KEY = GM_getValue('API_KEY'); // Torn API key - https://www.torn.com/preferences.php#tab=api
 const spyCacheTTL = 86400000; // Refresh cached spy that was found every 24 hours
 const noSpyRetry = 300000; // Retry "Spy not found." every 5 minutes (300000 milliseconds)
 const tickRate = 1000; // TornStats API load throttling (once every second)
@@ -63,6 +63,10 @@ const tickRate = 1000; // TornStats API load throttling (once every second)
                             ticker = setInterval(tickerFn, tickRate);
                         }, 60000);
                     }
+                } else if (response.status === 400) {
+                    queue.splice(0, queue.length);
+                    GM_setValue('API_KEY', null);
+                    requestApiKey();
                 } else {
                     cb(null);
                 }
@@ -143,11 +147,21 @@ const tickRate = 1000; // TornStats API load throttling (once every second)
         }
     };
 
+    const requestApiKey = () => {
+        const inputApi = prompt('Insert Torn API Key to load spy for wall targets\n\nCancel or leave blank and you will be prompted to insert API Key again when you reload the faction page');
+        if (inputApi) {
+            GM_setValue('API_KEY', inputApi);
+            location.reload();
+        }
+    };
+
     let ticker
 
     if (API_KEY) {
         observer.observe(document.querySelector('#factions #react-root'), {attributes: false, childList: true, characterData: false, subtree:true});
         ticker = setInterval(tickerFn, tickRate);
+    } else {
+        requestApiKey();
     }
 
     GM_addStyle(`
