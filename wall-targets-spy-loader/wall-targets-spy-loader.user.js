@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wall Targets Spy Loader
 // @namespace    https://github.com/josephting/torn-tools/tree/master/wall-targets-spy-loader
-// @version      0.9.2
+// @version      0.9.3
 // @supportURL   https://github.com/josephting/torn-tools/issues/new
 // @description  Load spy from Torn Stats for targets that's on the wall
 // @author       josephting [2272298]
@@ -63,7 +63,7 @@ const tickRate = 1000; // TornStats API load throttling (once every second)
                             ticker = setInterval(tickerFn, tickRate);
                         }, 60000);
                     }
-                } else if (response.status === 400) {
+                } else if (response.status === 400 && JSON.parse(response.responseText).error === 'ERROR: User not found.') {
                     queue.splice(0, queue.length);
                     GM_setValue('API_KEY', null);
                     requestApiKey();
