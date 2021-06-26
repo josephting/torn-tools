@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wall Targets Spy Loader
 // @namespace    https://github.com/josephting/torn-tools/tree/master/wall-targets-spy-loader
-// @version      0.9.3
+// @version      0.9.4
 // @supportURL   https://github.com/josephting/torn-tools/issues/new
 // @description  Load spy from Torn Stats for targets that's on the wall
 // @author       josephting [2272298]
@@ -46,7 +46,7 @@ const tickRate = 1000; // TornStats API load throttling (once every second)
     const loadSpy = (uid, cb) => {
         GM_xmlhttpRequest({
             method: 'GET',
-            url: `https://www.tornstats.com/api.php?key=${API_KEY}&action=spy&target=${uid}`,
+            url: `https://www.tornstats.com/api/v1/${API_KEY}/spy/${uid}`,
             onload: function(response) {
                 if (response.status >= 200 && response.status < 300) {
                     let spyData = JSON.parse(response.responseText);
